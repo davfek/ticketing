@@ -1,0 +1,35 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    container_name: postgresDB
+    restart: always
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - data:/data
+    ports:
+      - 5432:5432
+    networks:
+      - mynetwork
+
+#  java-api:
+#    build:
+#      context: ./
+#      dockerfile: Dockerfile
+#    ports:
+#      - 8090:8090
+#    container_name: java-api
+#    depends_on:
+#      - postgres
+#    networks:
+#      - mynetwork
+#    links:
+#      - postgres
+
+
+volumes:
+  data: {}
+
+networks:
+  mynetwork:
