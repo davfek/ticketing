@@ -23,7 +23,7 @@ public class Ticket {
             generator = "ticket_sequence"
     )
     private Long id;
-    private final LocalDateTime created;
+    private LocalDateTime created;
     private String description;
     // to be a person
     private String responsible;
@@ -31,6 +31,9 @@ public class Ticket {
     private String client;
     private List<String> ticketLog;
     private TicketStatus ticketStatus;
+
+    public Ticket() {
+    }
 
     public Ticket(String description, String responsible, String client) {
         this.description = description;
