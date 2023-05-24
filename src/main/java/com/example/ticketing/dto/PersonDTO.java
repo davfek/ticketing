@@ -8,13 +8,15 @@ public class PersonDTO{
     String id;
     @JsonProperty("name")
     String name;
+    @JsonProperty("phoneNumber")
     String phoneNumber;
+    @JsonProperty("email")
     String email;
-
-
+    @JsonProperty("internalTeam")
     InternalTeam internalTeam=InternalTeam.NON_APPLICABLE;
-
+    @JsonProperty("isManager")
     boolean isManager=false;
+    @JsonProperty("company")
     String company="n/a";
 
     public PersonDTO() {

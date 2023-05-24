@@ -19,25 +19,91 @@ public class ApiCallerService {
     @Value("${docker.api.url}")
     private String dockerApiUrl;
 
-    public List<PersonDTO> callIdProviderApi(){
-        RestTemplate restTemplate=new RestTemplate();
-        String apiUrl=dockerApiUrl+"api/v1/person";
+    public String getDockerApiUrlForRetrieving() {
+        return dockerApiUrl + "api/v1/person";
+    }
+
+    public List<PersonDTO> callIdProviderApi() {
+        RestTemplate restTemplate = new RestTemplate();
+        String apiUrl = getDockerApiUrlForRetrieving();
         try {
-            ResponseEntity<List<PersonDTO>> response=restTemplate.exchange(apiUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<PersonDTO>>() {
+            ResponseEntity<List<PersonDTO>> response = restTemplate.exchange(apiUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<PersonDTO>>() {
             });
 
-            if (response.getStatusCode()== HttpStatus.OK){
+            if (response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody();
-            }else {
-                System.err.println("API call failed with code: "+response.getStatusCode());
+            } else {
+                System.err.println("API call failed with code: " + response.getStatusCode());
                 return Collections.emptyList();
             }
-        }catch (HttpClientErrorException ex){
-            System.err.println("API call failed with code: "+ex.getStatusCode());
+        } catch (HttpClientErrorException ex) {
+            System.err.println("API call failed with code: " + ex.getStatusCode());
             return Collections.emptyList();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return Collections.emptyList();
         }
+    }
+
+    public PersonDTO getPersonById(String id) {
+        RestTemplate restTemplate = new RestTemplate();
+        String apiUrl = getDockerApiUrlForRetrieving() + "/" + id;
+        try {
+            ResponseEntity<PersonDTO> response = restTemplate.exchange(apiUrl, HttpMethod.GET, null, PersonDTO.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                System.err.println("API call failed with code: " + response.getStatusCode());
+                return null;
+            }
+        } catch (HttpClientErrorException ex) {
+            System.err.println("API call failed with code: " + ex.getStatusCode());
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public PersonDTO getPersonByName(String name) {
+        RestTemplate restTemplate = new RestTemplate();
+        String apiUrl = getDockerApiUrlForRetrieving() + "/name/" + name;
+        try {
+            ResponseEntity<PersonDTO> response = restTemplate.exchange(apiUrl, HttpMethod.GET, null, PersonDTO.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                System.err.println("API call failed with code: " + response.getStatusCode());
+                return null;
+            }
+        } catch (HttpClientErrorException ex) {
+            System.err.println("API call failed with code: " + ex.getStatusCode());
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<PersonDTO> getPersonWideSearch(String param) {
+        RestTemplate restTemplate = new RestTemplate();
+        String apiUrl = getDockerApiUrlForRetrieving() + "/broadsearch/" + param;
+        try {
+            ResponseEntity<List<PersonDTO>> response = restTemplate.exchange(apiUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<PersonDTO>>() {
+            });
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                System.err.println("API call failed with code: " + response.getStatusCode());
+                return Collections.emptyList();
+            }
+        } catch (HttpClientErrorException ex) {
+            System.err.println("API call failed with code: " + ex.getStatusCode());
+            return Collections.emptyList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+
     }
 }

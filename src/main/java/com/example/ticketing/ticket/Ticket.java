@@ -44,4 +44,8 @@ public class Ticket {
         this.ticketStatus=TicketStatus.CREATED;
 
     }
+
+    public void addToLog(String logUpdate){
+        ticketLog.add(logUpdate);
+    }
 }
