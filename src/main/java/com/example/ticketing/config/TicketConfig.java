@@ -12,7 +12,7 @@ public class TicketConfig {
     @Bean
     CommandLineRunner commandLineRunner(TicketRepository ticketRepository){
         return args ->{
-            Ticket ticket=new Ticket("test ticket","df","fd");
+            Ticket ticket=new Ticket("test ticket","645f96c2d4a737420b79d4b7","645f96c2d4a737420b79d4b8");
             ticketRepository.save(ticket);
         };
     }

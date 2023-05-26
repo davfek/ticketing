@@ -25,10 +25,10 @@ public class Ticket {
     private Long id;
     private LocalDateTime created;
     private String description;
-    // to be a person
-    private String responsible;
-    // to be a person
-    private String client;
+
+    private String responsibleID;
+
+    private String clientID;
     private List<String> ticketLog;
     private TicketStatus ticketStatus;
 
@@ -37,8 +37,8 @@ public class Ticket {
 
     public Ticket(String description, String responsible, String client) {
         this.description = description;
-        this.responsible = responsible;
-        this.client = client;
+        this.responsibleID = responsible;
+        this.clientID = client;
         this.created=LocalDateTime.now();
         this.ticketLog=new ArrayList<>();
         this.ticketStatus=TicketStatus.CREATED;
