@@ -1,8 +1,8 @@
 package com.example.ticketing.controller;
 
 
-import com.example.ticketing.dto.PersonDTO;
-import com.example.ticketing.service.ApiCallerService;
+import com.example.ticketing.service.IdAPIService;
+import org.dto.PersonDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,28 +10,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
+// temporary for testing purposes only
 @RestController
 @RequestMapping(path = "api/idprovider")
 public class ApiCallerController {
     @Autowired
-    private ApiCallerService apiCallerService;
+    private IdAPIService idAPIService;
 
     @GetMapping()
     public List<PersonDTO> callPersonApi(){
-        return apiCallerService.callIdProviderApi();
+        return idAPIService.callIdProviderApi();
     }
     @GetMapping("/{id}")
     public PersonDTO getPersonById(@PathVariable String id){
-        return apiCallerService.getPersonById(id);
+        return idAPIService.getPersonById(id);
     }
     @GetMapping("/name/{name}")
     public PersonDTO getPersonByName(@PathVariable String name){
-        return apiCallerService.getPersonByName(name);
+        return idAPIService.getPersonByName(name);
     }
 
     @GetMapping("/wide/{param}")
     public List<PersonDTO> getPersonWideSearch(@PathVariable String param){
-        return apiCallerService.getPersonWideSearch(param);
+        return idAPIService.getPersonWideSearch(param);
     }
 }
