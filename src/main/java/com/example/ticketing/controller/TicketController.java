@@ -21,6 +21,7 @@ public class TicketController {
         this.ticketService = ticketService;
     }
 
+    //working
     @GetMapping
     public ResponseEntity<List<Ticket>> findAll() {
         return ticketService.findAll();
@@ -30,30 +31,41 @@ public class TicketController {
 //    public ResponseEntity<Ticket> findById(@PathVariable("id") Long id) {
 //        return ticketService.findById(id);
 //    }
-    @GetMapping("/fetch/{id}")
+
+
+    //updated
+    @GetMapping("/{id}")
     public TicketDTO fetchById(@PathVariable("id") Long id) {
         return ticketService.getTicketById(id);
     }
 
 
+//    @PostMapping
+//    public ResponseEntity<HttpStatus> createTicket(@RequestBody Ticket ticket) {
+//        return ticketService.createTicket(ticket);
+//    }
+
+
+    //updated
     @PostMapping
-    public ResponseEntity<HttpStatus> createTicket(@RequestBody Ticket ticket) {
-        return ticketService.createTicket(ticket);
-    }
+    public ResponseEntity<Long> createTicket(@RequestBody TicketRequest ticketRequest){
 
-    @PostMapping("/create")
-    public ResponseEntity<Long> createTicketTest(@RequestBody TicketRequest ticketRequest){
-
-        return ticketService.createTicketTest(ticketRequest.getDescription(),ticketRequest.getClient(),ticketRequest.getResponsible());
+        return ticketService.createTicket(ticketRequest.getDescription(),ticketRequest.getClient(),ticketRequest.getResponsible());
 
     }
 
 
-
+    //updated and working
     @PutMapping("/log/{id}")
     public ResponseEntity<HttpStatus> addToTicketLog(@PathVariable("id") Long id,
                                                      @RequestBody String logEntry){
         return ticketService.addTicketLog(id,logEntry);
+    }
+
+    @PutMapping("/{id}/{newStatus}")
+    public ResponseEntity<HttpStatus> updateTicketStatus(@PathVariable("id") Long id,
+                                                         @PathVariable("newStatus") String newStatus){
+        return ticketService.updateTicketStatus(id,newStatus);
     }
 
     @DeleteMapping("{id}")

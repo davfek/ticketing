@@ -1,11 +1,13 @@
 package com.example.ticketing.service;
 
 import com.example.ticketing.DTO.TicketDTO;
+import com.example.ticketing.DTO.TicketPersonDTO;
 import com.example.ticketing.repository.TicketLogRepository;
 import com.example.ticketing.repository.TicketRepository;
 import com.example.ticketing.ticket.Ticket;
 import com.example.ticketing.ticket.TicketLog;
 import com.example.ticketing.ticket.TicketPerson;
+import com.example.ticketing.ticket.TicketStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.dto.PersonDTO;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,38 +32,38 @@ public class TicketService {
     private final EntityManager entityManager;
 
     @Autowired
-    public TicketService(TicketRepository ticketRepository,TicketLogRepository ticketLogRepository,IdAPIService idAPIService,EntityManager entityManager) {
+    public TicketService(TicketRepository ticketRepository, TicketLogRepository ticketLogRepository, IdAPIService idAPIService, EntityManager entityManager) {
         this.ticketRepository = ticketRepository;
-        this.ticketLogRepository=ticketLogRepository;
-        this.idAPIService=idAPIService;
-        this.entityManager=entityManager;
+        this.ticketLogRepository = ticketLogRepository;
+        this.idAPIService = idAPIService;
+        this.entityManager = entityManager;
     }
 
-    public ResponseEntity<Long> createTicketTest(String description, String clientName,String responsibleName){
-        PersonDTO clientDTO=idAPIService.getPersonByName(clientName);
-        PersonDTO responsibleDTO=idAPIService.getPersonByName(responsibleName);
+    public ResponseEntity<Long> createTicket(String description, String clientName, String responsibleName) {
+        PersonDTO clientDTO = idAPIService.getPersonByName(clientName);
+        PersonDTO responsibleDTO = idAPIService.getPersonByName(responsibleName);
 
         System.out.println(clientDTO.getId());
         System.out.println(responsibleDTO.getId());
 
-        Ticket ticket=new Ticket(description);
-        TicketPerson client = new TicketPerson(ticket,clientDTO.getId(),true);
-        TicketPerson responsible=new TicketPerson(ticket,responsibleDTO.getId(),false);
+        Ticket ticket = new Ticket(description);
+        TicketPerson client = new TicketPerson(ticket, clientDTO.getId(), true);
+        TicketPerson responsible = new TicketPerson(ticket, responsibleDTO.getId(), false);
 
         ticket.getTicketPeople().add(client);
         ticket.getTicketPeople().add(responsible);
 
         ticketRepository.save(ticket);
 
-        return new ResponseEntity<>(ticket.getId(),HttpStatus.OK);
+        return new ResponseEntity<>(ticket.getId(), HttpStatus.OK);
 
     }
 
-    public ResponseEntity<HttpStatus> addToTicketLog(Long id,String logEntry){
+    public ResponseEntity<HttpStatus> addToTicketLog(Long id, String logEntry) {
         Optional<Ticket> ticket = ticketRepository.findById(id);
 
         if (ticket.isPresent()) {
-            TicketLog ticketLog=new TicketLog(ticket.get(),logEntry);
+            TicketLog ticketLog = new TicketLog(ticket.get(), logEntry);
             ticket.get().getTicketLogs().add(ticketLog);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
@@ -88,7 +91,12 @@ public class TicketService {
         Ticket ticket = entityManager.find(Ticket.class, ticketId);
         TicketDTO ticketDTO = new TicketDTO(ticket);
         ticketDTO.setTicketLogs(ticket.getTicketLogs().stream().map(TicketLog::getLogEntry).collect(Collectors.toList()));
-        ticketDTO.setPersonIds(ticket.getTicketPeople().stream().map(TicketPerson::getPersonId).collect(Collectors.toList()));
+        ArrayList<TicketPersonDTO> ticketPersonDTOS = new ArrayList<>();
+        for (TicketPerson s : ticket.getTicketPeople()) {
+            TicketPersonDTO ticketPersonDTO = new TicketPersonDTO(idAPIService.getPersonById(s.getPersonId()).getName(), s.getPersonId(), s.isClient());
+            ticketPersonDTOS.add(ticketPersonDTO);
+        }
+        ticketDTO.setPersonIds(ticketPersonDTOS);
         return ticketDTO;
     }
 
@@ -101,15 +109,40 @@ public class TicketService {
             ticket.getTicketLogs().add(ticketLog);
             entityManager.persist(ticketLog);
             return new ResponseEntity<>(HttpStatus.OK);
-        }else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    public ResponseEntity<HttpStatus> createTicket(Ticket ticket) {
-        try {
-            ticketRepository.save(ticket);
+//    public ResponseEntity<HttpStatus> createTicket(Ticket ticket) {
+//        try {
+//            ticketRepository.save(ticket);
+//            return new ResponseEntity<>(HttpStatus.OK);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+
+    public ResponseEntity<HttpStatus> updateTicketStatus(Long id, String newStatus) {
+        Optional<Ticket> ticket = ticketRepository.findById(id);
+        TicketStatus newTicketStatus;
+        switch (newStatus.toLowerCase()) {
+            case "inprogress":
+                newTicketStatus=TicketStatus.IN_PROGRESS;
+                break;
+            case "blocked":
+                newTicketStatus=TicketStatus.BLOCKED;
+                break;
+            case "resolved":
+                newTicketStatus=TicketStatus.RESOLVED;
+                break;
+            default:
+                newTicketStatus=TicketStatus.CREATED;
+        }
+        if (ticket.isPresent() && ticket.get().isNewStatusValid(newTicketStatus)) {
+            ticket.get().setTicketStatus(newTicketStatus);
+            ticketRepository.save(ticket.get());
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -117,15 +150,16 @@ public class TicketService {
         try {
             ticketRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     public ResponseEntity<HttpStatus> deleteAll() {
         try {
             ticketRepository.deleteAll();
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

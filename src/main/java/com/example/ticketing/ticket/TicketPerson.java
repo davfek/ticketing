@@ -61,4 +61,12 @@ public class TicketPerson {
     public void setClient(boolean client) {
         isClient = client;
     }
+
+    @Override
+    public String toString() {
+        return "TicketPerson{" +
+                "personId='" + personId + '\'' +
+                ", isClient=" + isClient +
+                '}';
+    }
 }

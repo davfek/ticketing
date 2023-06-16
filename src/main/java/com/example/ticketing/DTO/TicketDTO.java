@@ -12,7 +12,7 @@ public class TicketDTO {
     private String description;
     private TicketStatus ticketStatus;
     private List<String> ticketLogs;
-    private List<String> personIds;
+    private List<TicketPersonDTO> personIds;
 
     // Constructors, getters, and setters
 
@@ -67,11 +67,11 @@ public class TicketDTO {
         this.ticketLogs = ticketLogs;
     }
 
-    public List<String> getPersonIds() {
+    public List<TicketPersonDTO> getPersonIds() {
         return personIds;
     }
 
-    public void setPersonIds(List<String> personIds) {
+    public void setPersonIds(List<TicketPersonDTO> personIds) {
         this.personIds = personIds;
     }
 }

@@ -38,6 +38,28 @@ public class Ticket {
 
     }
 
+    public boolean isNewStatusValid(TicketStatus newStatus){
+        TicketStatus oldStatus=this.ticketStatus;
+        switch (newStatus){
+            case BLOCKED:
+                if (oldStatus==TicketStatus.RESOLVED||oldStatus==TicketStatus.BLOCKED){
+                    return false;
+                }else return true;
+            case IN_PROGRESS:
+                if (oldStatus==TicketStatus.IN_PROGRESS||oldStatus==TicketStatus.RESOLVED){
+                    return false;
+                }else return true;
+            case RESOLVED:
+                if (oldStatus==TicketStatus.RESOLVED||oldStatus==TicketStatus.CREATED){
+                    return false;
+                }else return true;
+            case CREATED:
+                return false;
+            default:
+                return false;
+        }
+    }
+
     public Long getId() {
         return id;
     }
