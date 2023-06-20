@@ -1,9 +1,13 @@
 package com.example.ticketing.controller;
 
 import com.example.ticketing.DTO.TicketDTO;
+import com.example.ticketing.service.LoginService;
 import com.example.ticketing.service.TicketService;
 import com.example.ticketing.ticket.Ticket;
 import com.example.ticketing.ticket.TicketRequest;
+import com.example.ticketing.user.AuthenticationResult;
+import com.example.ticketing.user.LoginRequest;
+import com.example.ticketing.user.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +19,19 @@ import java.util.List;
 @RequestMapping(path = "api/v1/tickets")
 public class TicketController {
     private final TicketService ticketService;
+    private final LoginService loginService;
 
     @Autowired
-    public TicketController(TicketService ticketService) {
+    public TicketController(TicketService ticketService, LoginService loginService) {
         this.ticketService = ticketService;
+        this.loginService=loginService;
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        return loginService.login(loginRequest);
+    }
+
 
     //working
     @GetMapping
