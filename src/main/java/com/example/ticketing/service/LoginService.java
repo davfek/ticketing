@@ -1,17 +1,32 @@
 package com.example.ticketing.service;
 
+import com.example.ticketing.config.TokenConfig;
+import com.example.ticketing.repository.UserRepository;
 import com.example.ticketing.user.AuthenticationResult;
 import com.example.ticketing.user.LoginRequest;
 import com.example.ticketing.user.LoginResponse;
+import com.example.ticketing.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+@Service
 public class LoginService {
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final TokenConfig tokenConfig;
+
+    public LoginService(UserRepository userRepository, TokenConfig tokenConfig){
+        this.userRepository=userRepository;
+        this.passwordEncoder=new BCryptPasswordEncoder();
+        this.tokenConfig=tokenConfig;
+    }
 
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest){
         String username = loginRequest.getUsername();
@@ -27,19 +42,22 @@ public class LoginService {
         }
     }
     public AuthenticationResult authenticateUser(String username,String password){
-        //to implement IDProvider connection after Registration implementation
-        boolean isAuthenticated=true;
-        if (isAuthenticated){
-            String token=generateToken(username);
-            return new AuthenticationResult(true,token);
-        }else {
-            return new AuthenticationResult(false,null);
+        User user=userRepository.findByUsername(username);
+
+        if (user!=null){
+            if (passwordEncoder.matches(password, user.getPassword())){
+                String token = generateToken(username);
+                return new AuthenticationResult(true,token);
+            }
         }
+
+        return new AuthenticationResult(false,null);
+
     }
 
     public String generateToken(String userId) {
         long expirationTime = 3600000; // 1 hour in milliseconds
-        String secretKey = "yourSecretKey";
+        String secretKey = tokenConfig.getSecretKey();
 
         return Jwts.builder()
                 .setSubject(userId)
@@ -49,7 +67,7 @@ public class LoginService {
     }
 
     public boolean validateToken(String token) {
-        String secretKey = "yourSecretKey";
+        String secretKey = tokenConfig.getSecretKey();
 
         try {
             Jwts.parserBuilder()
@@ -65,7 +83,7 @@ public class LoginService {
     }
 
     public String getUserIdFromToken(String token) {
-        String secretKey = "yourSecretKey";
+        String secretKey = tokenConfig.getSecretKey();
 
         try {
             Claims claims = Jwts.parserBuilder()

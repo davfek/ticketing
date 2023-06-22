@@ -11,6 +11,7 @@ import com.example.ticketing.user.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,18 +20,18 @@ import java.util.List;
 @RequestMapping(path = "api/v1/tickets")
 public class TicketController {
     private final TicketService ticketService;
-    private final LoginService loginService;
+//    private final LoginService loginService;
 
     @Autowired
-    public TicketController(TicketService ticketService, LoginService loginService) {
+    public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
-        this.loginService=loginService;
+//        this.loginService=loginService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        return loginService.login(loginRequest);
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+//        return loginService.login(loginRequest);
+//    }
 
 
     //working
@@ -68,6 +69,7 @@ public class TicketController {
 
 
     //updated and working
+    @Secured("ROLE_ADMIN")
     @PutMapping("/log/{id}")
     public ResponseEntity<HttpStatus> addToTicketLog(@PathVariable("id") Long id,
                                                      @RequestBody String logEntry){
