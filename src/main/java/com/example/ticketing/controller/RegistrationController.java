@@ -33,6 +33,7 @@ public class RegistrationController {
         return registrationService.register(userRegistrationRequest);
     }
 
+    //testing purpose only
     @PutMapping("/{username}/{newRole}")
     public ResponseEntity<String> changeUserRole(@PathVariable String username,
                                                   @PathVariable String newRole){

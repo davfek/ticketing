@@ -13,15 +13,11 @@ public class AuthenticationResult {
         return isAuthenticated;
     }
 
-    public void setAuthenticated(boolean authenticated) {
-        isAuthenticated = authenticated;
-    }
+
 
     public String getToken() {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+
 }

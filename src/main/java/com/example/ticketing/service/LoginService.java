@@ -9,10 +9,15 @@ import com.example.ticketing.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 
@@ -22,11 +27,15 @@ public class LoginService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final TokenConfig tokenConfig;
 
+
+    @Autowired
     public LoginService(UserRepository userRepository, TokenConfig tokenConfig){
         this.userRepository=userRepository;
         this.passwordEncoder=new BCryptPasswordEncoder();
         this.tokenConfig=tokenConfig;
     }
+
+
 
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest){
         String username = loginRequest.getUsername();
