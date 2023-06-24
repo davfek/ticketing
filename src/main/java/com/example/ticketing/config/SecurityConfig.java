@@ -44,7 +44,7 @@ public class SecurityConfig {
         return http.cors(withDefaults())
                 .csrf((csrf) -> csrf.disable())
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/register/**", "/api/login/**").permitAll()
+                        .requestMatchers("/api/register/**", "/api/login/**","/api/idprovider/**").permitAll()
                         .anyRequest().hasAuthority("ROLE_EXTERNAL"))
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)

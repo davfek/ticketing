@@ -1,9 +1,25 @@
-version: '3'
+version: '3.8'
 services:
+  ticketing:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 8082:8082
+    container_name: ticketingAPI
+    depends_on:
+      - postgres
+      - java-api
+    networks:
+      external-shared-network:
+#    networks:
+#      - mynetwork
+    links:
+      - postgres
   postgres:
     image: postgres
-    container_name: postgresDB
-    restart: always
+    container_name: postgres
+#    restart: always
     environment:
       - POSTGRES_USER=myusername
       - POSTGRES_PASSWORD=mypassword
@@ -12,36 +28,29 @@ services:
     ports:
       - 5432:5432
     networks:
-      - mynetwork
+      external-shared-network:
+#    networks:
+#      - mynetwork
   pgadmin:
     image: dpage/pgadmin4
-    restart: always
+#    restart: always
     environment:
       - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
       - PGADMIN_DEFAULT_PASSWORD=admin
     ports:
       - 8090:80
     networks:
-      - mynetwork
-
-
-#  java-api:
-#    build:
-#      context: ./
-#      dockerfile: Dockerfile
-#    ports:
-#      - 8090:8090
-#    container_name: java-api
-#    depends_on:
-#      - postgres
+      external-shared-network:
 #    networks:
 #      - mynetwork
-#    links:
-#      - postgres
 
 
 volumes:
   data: {}
 
 networks:
-  mynetwork:
+  external-shared-network:
+    name: sharednetwork
+    external: true
+#  mynetwork:
+
