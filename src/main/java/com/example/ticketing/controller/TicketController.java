@@ -16,25 +16,18 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "api/v1/tickets")
 public class TicketController {
     private final TicketService ticketService;
-//    private final LoginService loginService;
 
     @Autowired
     public TicketController(TicketService ticketService) {
         this.ticketService = ticketService;
-//        this.loginService=loginService;
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-//        return loginService.login(loginRequest);
-//    }
 
     @Secured("ROLE_INTERNAL")
     //working
@@ -43,15 +36,7 @@ public class TicketController {
         return ticketService.findAll();
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Ticket> findById(@PathVariable("id") Long id) {
-//        return ticketService.findById(id);
-//    }
 
-
-    //updated
-//    @Secured("ROLE_INTERNAL")
-//    @PreAuthorize("hasRole('ROLE_INTERNAL')")
     @Secured("ROLE_INTERNAL")
     @GetMapping("/{id}")
     public TicketDTO fetchById(@PathVariable("id") Long id) {
@@ -59,13 +44,6 @@ public class TicketController {
     }
 
 
-//    @PostMapping
-//    public ResponseEntity<HttpStatus> createTicket(@RequestBody Ticket ticket) {
-//        return ticketService.createTicket(ticket);
-//    }
-
-
-    //updated
     @Secured({"ROLE_EXTERNAL"})
     @PostMapping()
     public ResponseEntity<Long> createTicket(@RequestBody TicketRequest ticketRequest) {
@@ -74,20 +52,27 @@ public class TicketController {
 
     }
 
-
-    //updated and working
     @Secured("ROLE_INTERNAL")
     @PutMapping("/log/{id}")
     public ResponseEntity<HttpStatus> addToTicketLog(@PathVariable("id") Long id,
                                                      @RequestBody String logEntry) {
         return ticketService.addTicketLog(id, logEntry);
     }
+
+    @Secured("ROLE_INTERNAL")
+    @PutMapping("/id")
+    public ResponseEntity<HttpStatus> updateTicket(@PathVariable("id")Long id,
+                                                   @RequestBody TicketDTO ticketDTO){
+        return ticketService.updateTicket(id,ticketDTO);
+    }
+
     @Secured("ROLE_INTERNAL")
     @PutMapping("/{id}/{newStatus}")
     public ResponseEntity<HttpStatus> updateTicketStatus(@PathVariable("id") Long id,
                                                          @PathVariable("newStatus") String newStatus) {
         return ticketService.updateTicketStatus(id, newStatus);
     }
+
     @Secured("ROLE_INTERNAL")
     @DeleteMapping("{id}")
     public ResponseEntity<HttpStatus> deleteById(@PathVariable("id") Long id) {

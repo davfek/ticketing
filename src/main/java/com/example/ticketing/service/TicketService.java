@@ -59,33 +59,9 @@ public class TicketService {
 
     }
 
-    public ResponseEntity<HttpStatus> addToTicketLog(Long id, String logEntry) {
-        Optional<Ticket> ticket = ticketRepository.findById(id);
-
-        if (ticket.isPresent()) {
-            TicketLog ticketLog = new TicketLog(ticket.get(), logEntry);
-            ticket.get().getTicketLogs().add(ticketLog);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
     public ResponseEntity<List<Ticket>> findAll() {
         return new ResponseEntity<>(ticketRepository.findAll(), HttpStatus.OK);
     }
-
-//    public ResponseEntity<Ticket> findById(Long id) {
-//        Optional<Ticket> optionalTicket = ticketRepository.findById(id);
-//        if (optionalTicket.isPresent()) {
-//            Ticket ticket=optionalTicket.get();
-//            ticket.getTicketLogs().size();
-//            ticket.getTicketPeople().size();
-//            return new ResponseEntity<>(ticket, HttpStatus.OK);
-//        } else {
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        }
-//    }
 
     public TicketDTO getTicketById(Long ticketId) {
         Ticket ticket = entityManager.find(Ticket.class, ticketId);
@@ -112,14 +88,16 @@ public class TicketService {
         } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-//    public ResponseEntity<HttpStatus> createTicket(Ticket ticket) {
-//        try {
-//            ticketRepository.save(ticket);
-//            return new ResponseEntity<>(HttpStatus.OK);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
+    public ResponseEntity<HttpStatus> updateTicket(Long id,TicketDTO ticketDTO){
+        Optional<Ticket> oldTicket= ticketRepository.findById(id);
+        if (oldTicket.isPresent()){
+            oldTicket.get().setDescription(ticketDTO.getDescription());
+            updateTicketStatus(oldTicket.get().getId(),ticketDTO.getTicketStatus().toString());
+            return new ResponseEntity<>(HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 
     public ResponseEntity<HttpStatus> updateTicketStatus(Long id, String newStatus) {
         Optional<Ticket> ticket = ticketRepository.findById(id);

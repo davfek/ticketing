@@ -13,8 +13,6 @@ public class AuthenticationResult {
         return isAuthenticated;
     }
 
-
-
     public String getToken() {
         return token;
     }

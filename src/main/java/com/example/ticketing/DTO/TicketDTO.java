@@ -14,9 +14,6 @@ public class TicketDTO {
     private List<String> ticketLogs;
     private List<TicketPersonDTO> personIds;
 
-    // Constructors, getters, and setters
-
-    // Constructor that takes a Ticket entity and populates the DTO
     public TicketDTO(Ticket ticket) {
         this.id = ticket.getId();
         this.created = ticket.getCreated();

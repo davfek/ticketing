@@ -23,10 +23,7 @@ public class RegistrationController {
     public List<User> getUsers(){
         return registrationService.getUsers();
     }
-//    @GetMapping("/{username}")
-//    public User getByName(@PathVariable String username){
-//       return registrationService.getByName(username);
-//    }
+
 
     @PostMapping
     public ResponseEntity<String> registerUser(@RequestBody UserRegistrationRequest userRegistrationRequest){

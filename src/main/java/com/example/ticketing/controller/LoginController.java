@@ -33,20 +33,6 @@ public class LoginController {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginRequest loginRequest){
         return loginService.login(loginRequest);
-//        return ResponseEntity.status(HttpStatus.OK).body("GOT ACCESS");
     }
 
-
-    //new
-    @PostMapping("/authenticate")
-    public LoginResponse authenticate(LoginRequest loginRequest){
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    loginRequest.getUsername(),loginRequest.getPassword()));
-
-        }catch (BadCredentialsException ex){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-        return new LoginResponse(loginService.generateToken(loginRequest.getUsername()));
-    }
 }

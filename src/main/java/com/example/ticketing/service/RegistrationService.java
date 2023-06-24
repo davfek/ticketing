@@ -25,9 +25,7 @@ public class RegistrationService {
     public List<User> getUsers(){
        return userRepository.findAll();
     }
-//    public User getByName(String name){
-//        return userRepository.findByUsername(name);
-//    }
+
 
     public ResponseEntity<String> register(UserRegistrationRequest userRegistrationRequest) {
         if (userRepository.existsByUsername(userRegistrationRequest.getUsername())) {

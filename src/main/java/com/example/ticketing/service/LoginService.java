@@ -59,7 +59,6 @@ public class LoginService {
                 return new AuthenticationResult(true,token);
             }
         }
-
         return new AuthenticationResult(false,null);
 
     }
@@ -86,7 +85,6 @@ public class LoginService {
 
             return true;
         } catch (Exception e) {
-            // Token validation failed
             return false;
         }
     }
@@ -103,7 +101,6 @@ public class LoginService {
 
             return claims.getSubject();
         } catch (Exception e) {
-            // Token validation failed
             return null;
         }
     }
