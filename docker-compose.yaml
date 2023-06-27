@@ -1,35 +1,66 @@
-version: '3'
+version: '3.8'
 services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    command:
+      - --noauth
+    ports:
+      - 27017:27017
+    volumes:
+      - data:/data
+    networks:
+      external-shared-network:
+  ticketing:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 8082:8082
+    container_name: ticketingAPI
+    depends_on:
+      - postgres
+    networks:
+      external-shared-network:
+#    networks:
+#      - mynetwork
+    links:
+      - postgres
   postgres:
     image: postgres
-    container_name: postgresDB
-    restart: always
+    container_name: postgres
+#    restart: always
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
+      - POSTGRES_USER=myusername
+      - POSTGRES_PASSWORD=mypassword
     volumes:
       - data:/data
     ports:
       - 5432:5432
     networks:
-      - mynetwork
-
-#  java-api:
-#    build:
-#      context: ./
-#      dockerfile: Dockerfile
-#    ports:
-#      - 8090:8090
-#    container_name: java-api
-#    depends_on:
-#      - postgres
+      external-shared-network:
 #    networks:
 #      - mynetwork
-#    links:
-#      - postgres
+  pgadmin:
+    image: dpage/pgadmin4
+#    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - 8090:80
+    networks:
+      external-shared-network:
+#    networks:
+#      - mynetwork
 
 
 volumes:
   data: {}
 
 networks:
-  mynetwork:
+  external-shared-network:
+    name: sharednetwork
+    external: true
+#  mynetwork:
+
