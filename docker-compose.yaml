@@ -1,5 +1,16 @@
 version: '3.8'
 services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    command:
+      - --noauth
+    ports:
+      - 27017:27017
+    volumes:
+      - data:/data
+    networks:
+      external-shared-network:
   ticketing:
     build:
       context: ./
@@ -9,7 +20,6 @@ services:
     container_name: ticketingAPI
     depends_on:
       - postgres
-      - java-api
     networks:
       external-shared-network:
 #    networks:
