@@ -12,8 +12,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+    private static final String roleExternal="ROLE_EXTERNAL";
+    private static final String roleInternal="ROLE_INTERNAL";
+    private static final String roleAdmin="ROLE_ADMIN";
     private final UserRepository userRepository;
 
     @Autowired
@@ -23,30 +28,31 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
+        Optional<User> user = userRepository.findByUsername(username);
+
+        if (user.isEmpty()) {
             throw new UsernameNotFoundException("User with name:" + username + "not found.");
         }
-        String userRole= user.getUserRole().toString().toLowerCase();
+
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        switch (userRole){
-            case "admin":
-                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                authorities.add(new SimpleGrantedAuthority("ROLE_EXTERNAL"));
-                authorities.add(new SimpleGrantedAuthority("ROLE_INTERNAL"));
+        switch (user.get().getUserRole()){
+            case ADMIN:
+                authorities.add(new SimpleGrantedAuthority(roleAdmin));
+                authorities.add(new SimpleGrantedAuthority(roleExternal));
+                authorities.add(new SimpleGrantedAuthority(roleInternal));
                 break;
-            case "internal":
-                authorities.add(new SimpleGrantedAuthority("ROLE_EXTERNAL"));
-                authorities.add(new SimpleGrantedAuthority("ROLE_INTERNAL"));
+            case INTERNAL:
+                authorities.add(new SimpleGrantedAuthority(roleExternal));
+                authorities.add(new SimpleGrantedAuthority(roleInternal));
                 break;
             default:
-                authorities.add(new SimpleGrantedAuthority("ROLE_EXTERNAL"));
+                authorities.add(new SimpleGrantedAuthority(roleExternal));
         }
 
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
+                user.get().getUsername(),
+                user.get().getPassword(),
                 authorities
         );
 

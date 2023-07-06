@@ -28,23 +28,19 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final TicketLogRepository ticketLogRepository;
     private final IdAPIService idAPIService;
-    @PersistenceContext
-    private final EntityManager entityManager;
+
 
     @Autowired
-    public TicketService(TicketRepository ticketRepository, TicketLogRepository ticketLogRepository, IdAPIService idAPIService, EntityManager entityManager) {
+    public TicketService(TicketRepository ticketRepository, TicketLogRepository ticketLogRepository, IdAPIService idAPIService) {
         this.ticketRepository = ticketRepository;
         this.ticketLogRepository = ticketLogRepository;
         this.idAPIService = idAPIService;
-        this.entityManager = entityManager;
     }
 
-    public ResponseEntity<Long> createTicket(String description, String clientName, String responsibleName) {
+    public Long createTicket(String description, String clientName, String responsibleName) {
         PersonDTO clientDTO = idAPIService.getPersonByName(clientName);
         PersonDTO responsibleDTO = idAPIService.getPersonByName(responsibleName);
 
-        System.out.println(clientDTO.getId());
-        System.out.println(responsibleDTO.getId());
 
         Ticket ticket = new Ticket(description);
         TicketPerson client = new TicketPerson(ticket, clientDTO.getId(), true);
@@ -55,91 +51,76 @@ public class TicketService {
 
         ticketRepository.save(ticket);
 
-        return new ResponseEntity<>(ticket.getId(), HttpStatus.OK);
+        return ticket.getId();
 
     }
 
-    public ResponseEntity<List<Ticket>> findAll() {
-        return new ResponseEntity<>(ticketRepository.findAll(), HttpStatus.OK);
+    public List<Ticket> findAll() {
+        return ticketRepository.findAll();
     }
 
     public TicketDTO getTicketById(Long ticketId) {
-        Ticket ticket = entityManager.find(Ticket.class, ticketId);
-        TicketDTO ticketDTO = new TicketDTO(ticket);
-        ticketDTO.setTicketLogs(ticket.getTicketLogs().stream().map(TicketLog::getLogEntry).collect(Collectors.toList()));
-        ArrayList<TicketPersonDTO> ticketPersonDTOS = new ArrayList<>();
-        for (TicketPerson s : ticket.getTicketPeople()) {
-            TicketPersonDTO ticketPersonDTO = new TicketPersonDTO(idAPIService.getPersonById(s.getPersonId()).getName(), s.getPersonId(), s.isClient());
-            ticketPersonDTOS.add(ticketPersonDTO);
-        }
-        ticketDTO.setPersonIds(ticketPersonDTOS);
-        return ticketDTO;
+        Optional<Ticket> ticket = ticketRepository.findById(ticketId);
+        if (ticket.isPresent()) {
+            TicketDTO ticketDTO = new TicketDTO(ticket.get());
+            ticketDTO.setTicketLogs(ticket.get().getTicketLogs().stream().map(TicketLog::getLogEntry).collect(Collectors.toList()));
+            ArrayList<TicketPersonDTO> ticketPersonDTOS = new ArrayList<>();
+            for (TicketPerson s : ticket.get().getTicketPeople()) {
+                TicketPersonDTO ticketPersonDTO = new TicketPersonDTO(idAPIService.getPersonById(s.getPersonId()).getName(), s.getPersonId(), s.isClient());
+                ticketPersonDTOS.add(ticketPersonDTO);
+            }
+            ticketDTO.setPersonIds(ticketPersonDTOS);
+            return ticketDTO;
+        }else return null;
     }
 
     @Transactional
-    public ResponseEntity<HttpStatus> addTicketLog(Long ticketId, String logEntry) {
-        Ticket ticket = entityManager.find(Ticket.class, ticketId);
+    public boolean addTicketLog(Long ticketId, String logEntry) {
+        Optional<Ticket> ticket = ticketRepository.findById(ticketId);
 
-        if (ticket != null) {
-            TicketLog ticketLog = new TicketLog(ticket, logEntry);
-            ticket.getTicketLogs().add(ticketLog);
-            entityManager.persist(ticketLog);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (ticket.isPresent()) {
+            TicketLog ticketLog = new TicketLog(ticket.get(), logEntry);
+            ticket.get().getTicketLogs().add(ticketLog);
+            ticketLogRepository.save(ticketLog);
+            return true;
+        } else return false;
     }
 
-    public ResponseEntity<HttpStatus> updateTicket(Long id,TicketDTO ticketDTO){
-        Optional<Ticket> oldTicket= ticketRepository.findById(id);
-        if (oldTicket.isPresent()){
+    public Ticket updateTicket(Long id, TicketDTO ticketDTO) {
+        Optional<Ticket> oldTicket = ticketRepository.findById(id);
+        if (oldTicket.isPresent()) {
             oldTicket.get().setDescription(ticketDTO.getDescription());
-            updateTicketStatus(oldTicket.get().getId(),ticketDTO.getTicketStatus().toString());
-            return new ResponseEntity<>(HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            updateTicketStatus(oldTicket.get().getId(), ticketDTO.getTicketStatus().toString());
+            return ticketRepository.save(oldTicket.get());
+        } else {
+            return null;
         }
     }
 
-    public ResponseEntity<HttpStatus> updateTicketStatus(Long id, String newStatus) {
+    public Ticket updateTicketStatus(Long id, String newStatus) {
         Optional<Ticket> ticket = ticketRepository.findById(id);
-        TicketStatus newTicketStatus;
-        switch (newStatus.toLowerCase()) {
-            case "inprogress":
-                newTicketStatus=TicketStatus.IN_PROGRESS;
-                break;
-            case "blocked":
-                newTicketStatus=TicketStatus.BLOCKED;
-                break;
-            case "resolved":
-                newTicketStatus=TicketStatus.RESOLVED;
-                break;
-            default:
-                newTicketStatus=TicketStatus.CREATED;
-        }
+        TicketStatus newTicketStatus = TicketStatus.defineStatusFromString(newStatus);
+
         if (ticket.isPresent() && ticket.get().isNewStatusValid(newTicketStatus)) {
             ticket.get().setTicketStatus(newTicketStatus);
-            ticketRepository.save(ticket.get());
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ticketRepository.save(ticket.get());
         } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return null;
         }
     }
 
-    public ResponseEntity<HttpStatus> deleteById(Long id) {
-        try {
-            ticketRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public boolean deleteById(Long id) {
+        ticketRepository.deleteById(id);
+        if (ticketRepository.findById(id).isPresent()) {
+            return false;
+        } else return true;
     }
 
-    public ResponseEntity<HttpStatus> deleteAll() {
-        try {
-            ticketRepository.deleteAll();
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public boolean deleteAll() {
+        ticketRepository.deleteAll();
+        if (ticketRepository.findById(1L).isPresent()) {
+            return false;
+        } else return true;
     }
 
 

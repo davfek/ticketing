@@ -5,6 +5,15 @@ public class TicketRequest {
     private String client;
     private String responsible;
 
+    public TicketRequest() {
+    }
+
+    public TicketRequest(String description, String client, String responsible) {
+        this.description = description;
+        this.client = client;
+        this.responsible = responsible;
+    }
+
     public String getDescription() {
         return description;
     }

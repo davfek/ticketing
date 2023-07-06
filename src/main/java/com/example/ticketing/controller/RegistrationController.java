@@ -4,6 +4,7 @@ import com.example.ticketing.service.RegistrationService;
 import com.example.ticketing.user.User;
 import com.example.ticketing.user.UserRegistrationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,21 +21,27 @@ public class RegistrationController {
 
     //Testing only
     @GetMapping
-    public List<User> getUsers(){
-        return registrationService.getUsers();
+    public ResponseEntity<List<User>> getUsers(){
+        return new ResponseEntity<>(registrationService.getUsers(),HttpStatus.OK);
     }
 
 
     @PostMapping
     public ResponseEntity<String> registerUser(@RequestBody UserRegistrationRequest userRegistrationRequest){
-        return registrationService.register(userRegistrationRequest);
+        String response =  registrationService.register(userRegistrationRequest);
+        if (response.equals("Registration successful")){
+            return new ResponseEntity<>("Registration successful", HttpStatus.CREATED);
+        }else return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
     }
 
     //testing purpose only
     @PutMapping("/{username}/{newRole}")
     public ResponseEntity<String> changeUserRole(@PathVariable String username,
                                                   @PathVariable String newRole){
-        return registrationService.setUserRole(username, newRole);
+        String response= registrationService.setUserRole(username, newRole);
+        if (response.equals("User role set")){
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        }else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

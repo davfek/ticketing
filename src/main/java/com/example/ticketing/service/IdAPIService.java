@@ -18,11 +18,13 @@ import java.util.List;
 @Service
 public class IdAPIService {
 
-    @Value("${docker.api.url}")
+    @Value("${idprovider.api.url}")
     private String dockerApiUrl;
 
+    private static final String apiSuffix = "api/v1/person";
+
     public String getDockerApiUrlForRetrieving() {
-        return dockerApiUrl + "api/v1/person";
+        return System.getenv("idprovider_api_url") + apiSuffix;
     }
 
     public List<PersonDTO> callIdProviderApi() {
@@ -59,7 +61,7 @@ public class IdAPIService {
                 return null;
             }
         } catch (HttpClientErrorException ex) {
-            System.err.println("API call failed with code: " + ex.getStatusCode());
+            System.err.println("API call failed with code: " + ex.getMessage());
             return null;
         } catch (Exception e) {
             e.printStackTrace();
