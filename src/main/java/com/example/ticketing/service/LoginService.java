@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class LoginService {
@@ -37,24 +38,23 @@ public class LoginService {
 
 
 
-    public ResponseEntity<LoginResponse> login(LoginRequest loginRequest){
+    public LoginResponse login(LoginRequest loginRequest){
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
 
         AuthenticationResult result = authenticateUser(username, password);
 
         if (result.isAuthenticated()) {
-            LoginResponse response = new LoginResponse(result.getToken());
-            return ResponseEntity.ok(response);
+            return new LoginResponse(result.getToken());
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return null;
         }
     }
     public AuthenticationResult authenticateUser(String username,String password){
-        User user=userRepository.findByUsername(username);
+        Optional<User> user=userRepository.findByUsername(username);
 
-        if (user!=null){
-            if (passwordEncoder.matches(password, user.getPassword())){
+        if (user.isPresent()){
+            if (passwordEncoder.matches(password, user.get().getPassword())){
                 String token = generateToken(username);
                 return new AuthenticationResult(true,token);
             }

@@ -25,8 +25,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     public AuthenticationFilter(LoginService loginService, CustomUserDetailsService customUserDetailsService) {
-
-
         this.loginService = loginService;
         this.customUserDetailsService = customUserDetailsService;
     }
@@ -34,20 +32,24 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
+
         String token = header.substring(7);
-        String username = null;
-        if (loginService.validateToken(token)) {
-            username = loginService.getUserIdFromToken(token);
-        }
-        if (username == null) {
-            filterChain.doFilter(request, response);
+        String username;
+
+        if (loginService.validateToken(token)){
+            username=loginService.getUserIdFromToken(token);
+        }else {
+            filterChain.doFilter(request,response);
             return;
         }
+
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

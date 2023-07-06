@@ -33,22 +33,30 @@ public class TicketController {
     //working
     @GetMapping
     public ResponseEntity<List<Ticket>> findAll() {
-        return ticketService.findAll();
+        List<Ticket> ticketList=ticketService.findAll();
+        if (ticketList.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }else return new ResponseEntity<>(ticketList,HttpStatus.OK);
     }
 
 
     @Secured("ROLE_INTERNAL")
     @GetMapping("/{id}")
-    public TicketDTO fetchById(@PathVariable("id") Long id) {
-        return ticketService.getTicketById(id);
+    public ResponseEntity<TicketDTO> fetchById(@PathVariable("id") Long id) {
+        TicketDTO ticketDTO= ticketService.getTicketById(id);
+        if (ticketDTO!=null){
+            return new ResponseEntity<>(ticketDTO,HttpStatus.OK);
+        }else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 
     @Secured({"ROLE_EXTERNAL"})
     @PostMapping()
     public ResponseEntity<Long> createTicket(@RequestBody TicketRequest ticketRequest) {
-
-        return ticketService.createTicket(ticketRequest.getDescription(), ticketRequest.getClient(), ticketRequest.getResponsible());
+        Long ticketId=ticketService.createTicket(ticketRequest.getDescription(), ticketRequest.getClient(), ticketRequest.getResponsible());
+        if (ticketId>0){
+            return new ResponseEntity<>(ticketId,HttpStatus.CREATED);
+        }else return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
 
     }
 
@@ -56,33 +64,46 @@ public class TicketController {
     @PutMapping("/log/{id}")
     public ResponseEntity<HttpStatus> addToTicketLog(@PathVariable("id") Long id,
                                                      @RequestBody String logEntry) {
-        return ticketService.addTicketLog(id, logEntry);
+        boolean isUpdated= ticketService.addTicketLog(id, logEntry);
+        if (isUpdated){
+            return new ResponseEntity<>(HttpStatus.OK);
+        }else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Secured("ROLE_INTERNAL")
     @PutMapping("/id")
-    public ResponseEntity<HttpStatus> updateTicket(@PathVariable("id")Long id,
+    public ResponseEntity<Ticket> updateTicket(@PathVariable("id")Long id,
                                                    @RequestBody TicketDTO ticketDTO){
-        return ticketService.updateTicket(id,ticketDTO);
+        Ticket ticket= ticketService.updateTicket(id,ticketDTO);
+        if (ticket!=null){
+            return new ResponseEntity<>(ticket,HttpStatus.OK);
+        }else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Secured("ROLE_INTERNAL")
     @PutMapping("/{id}/{newStatus}")
-    public ResponseEntity<HttpStatus> updateTicketStatus(@PathVariable("id") Long id,
+    public ResponseEntity<Ticket> updateTicketStatus(@PathVariable("id") Long id,
                                                          @PathVariable("newStatus") String newStatus) {
-        return ticketService.updateTicketStatus(id, newStatus);
+        Ticket ticket= ticketService.updateTicketStatus(id, newStatus);
+        if (ticket!=null){
+            return new ResponseEntity<>(ticket,HttpStatus.OK);
+        }else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Secured("ROLE_INTERNAL")
     @DeleteMapping("{id}")
     public ResponseEntity<HttpStatus> deleteById(@PathVariable("id") Long id) {
-        return ticketService.deleteById(id);
+        if (ticketService.deleteById(id)){
+            return new ResponseEntity<>(HttpStatus.OK);
+        }else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Secured({"ROLE_ADMIN"})
     @DeleteMapping
     public ResponseEntity<HttpStatus> deleteAll() {
-        return ticketService.deleteAll();
+        if (ticketService.deleteAll()){
+            return new ResponseEntity<>(HttpStatus.OK);
+        }else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

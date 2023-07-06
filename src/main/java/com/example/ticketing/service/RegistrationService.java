@@ -4,12 +4,11 @@ import com.example.ticketing.repository.UserRepository;
 import com.example.ticketing.user.User;
 import com.example.ticketing.user.UserRegistrationRequest;
 import com.example.ticketing.user.UserRole;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RegistrationService {
@@ -27,9 +26,9 @@ public class RegistrationService {
     }
 
 
-    public ResponseEntity<String> register(UserRegistrationRequest userRegistrationRequest) {
+    public String register(UserRegistrationRequest userRegistrationRequest) {
         if (userRepository.existsByUsername(userRegistrationRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already taken");
+            return "Username already taken";
         }
         User newUser = new User();
         newUser.setUsername(userRegistrationRequest.getUsername());
@@ -38,30 +37,20 @@ public class RegistrationService {
 
         userRepository.save(newUser);
 
-        return ResponseEntity.ok("Registration successful");
+        return "Registration successful";
     }
 
-    public ResponseEntity<String> setUserRole(String username, String userRole) {
-        UserRole userRole1;
-        switch (userRole){
-            case "admin":
-                userRole1=UserRole.ADMIN;
-                break;
-            case "internal":
-                userRole1=UserRole.INTERNAL;
-                break;
-            default:
-                userRole1=UserRole.EXTERNAL;
-                break;
+    public String setUserRole(String username, String userRole) {
+        UserRole userRole1=UserRole.defineRoleFromString(userRole);
+        Optional<User> user = userRepository.findByUsername(username);
+
+        if (user.isEmpty()) {
+            return "User not found";
         }
 
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-        user.setUserRole(userRole1);
-        userRepository.save(user);
-        return ResponseEntity.ok("User role set");
+        user.get().setUserRole(userRole1);
+        userRepository.save(user.get());
+        return "User role set";
     }
 
 }

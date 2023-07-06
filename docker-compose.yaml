@@ -1,5 +1,43 @@
 version: '3.8'
 services:
+  ticketing:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 8082:8082
+    container_name: ticketingAPI
+    environment:
+      - idprovider_api_url=http://java-api:8080/
+    depends_on:
+      - postgres
+    networks:
+      external-shared-network:
+    links:
+      - postgres
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=myusername
+      - POSTGRES_PASSWORD=mypassword
+    volumes:
+      - data:/data
+    ports:
+      - 5432:5432
+    networks:
+      external-shared-network:
+  java-api:
+    image: idprovider-java-api:latest
+    ports:
+      - 8080:8080
+    container_name: java-api
+    depends_on:
+      - mongodb
+    networks:
+      external-shared-network:
+    links:
+      - mongodb
   mongodb:
     image: mongo
     container_name: mongodb
@@ -11,48 +49,15 @@ services:
       - data:/data
     networks:
       external-shared-network:
-  ticketing:
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    ports:
-      - 8082:8082
-    container_name: ticketingAPI
-    depends_on:
-      - postgres
-    networks:
-      external-shared-network:
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    environment:
+#      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+#      - PGADMIN_DEFAULT_PASSWORD=admin
+#    ports:
+#      - 8090:80
 #    networks:
-#      - mynetwork
-    links:
-      - postgres
-  postgres:
-    image: postgres
-    container_name: postgres
-#    restart: always
-    environment:
-      - POSTGRES_USER=myusername
-      - POSTGRES_PASSWORD=mypassword
-    volumes:
-      - data:/data
-    ports:
-      - 5432:5432
-    networks:
-      external-shared-network:
-#    networks:
-#      - mynetwork
-  pgadmin:
-    image: dpage/pgadmin4
-#    restart: always
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
-      - PGADMIN_DEFAULT_PASSWORD=admin
-    ports:
-      - 8090:80
-    networks:
-      external-shared-network:
-#    networks:
-#      - mynetwork
+#      external-shared-network:
 
 
 volumes:
@@ -62,5 +67,5 @@ networks:
   external-shared-network:
     name: sharednetwork
     external: true
-#  mynetwork:
+
 

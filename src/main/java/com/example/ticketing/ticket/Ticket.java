@@ -54,7 +54,6 @@ public class Ticket {
                     return false;
                 }else return true;
             case CREATED:
-                return false;
             default:
                 return false;
         }
